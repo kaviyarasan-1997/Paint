@@ -1,0 +1,129 @@
+
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no, minimal-ui">
+    <title>web Paint</title>
+    <meta name="viewport" content="width=device-width">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link href='as.webmanifest' rel='manifest' />
+    <link rel="shortcut icon" href="https://canvas.apps.chrome/assets/canvas_192.png"/>
+    <style type="text/css">
+      body {
+        -webkit-user-select: none;
+        background-color: #fff;
+      } 
+      .canvas-container {
+        height: 100vh !important;
+        position: fixed !important;
+        left: 0;
+        overflow: hidden;
+        top: 0;
+        width: 100vw !important;
+        z-index: -1;
+        -webkit-user-select: initial !important;
+        background-color: transparent;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrapper">
+      <canvas id="fabric-brush-demo"></canvas>
+    </div>
+    <script>
+      window.onload = function() {
+        window.brush = null;
+        var canvas = new fabric.Canvas("fabric-brush-demo", {
+          isDrawingMode: true,
+          allowTouchScrolling: false,
+          hoverCursor: "pointer",
+          selection: false
+        })
+        .setWidth(window.innerWidth)
+        .setHeight(window.innerHeight);
+
+        window.canvas = canvas;
+
+        function setupBrush(brushName, opt) {
+          canvas.freeDrawingBrush = new fabric[brushName](canvas, opt || {});
+        }
+
+        var gui = new dat.GUI();
+        gui.brushType = "MarkerBrush";
+        gui.brushWidth = 2;
+        gui.brushOpacity = 1;
+        gui.inkAmount = 7;
+        gui.brushColor = "#ff0000";
+
+        setupBrush(gui.brushType, {
+          width: gui.brushWidth,
+          opacity: gui.brushOpacity,
+          inkAmount: gui.inkAmount,
+          color: gui.brushColor
+        });
+
+        gui.Clear = function(){
+          canvas.clearContext(canvas.contextTop);
+        }
+        gui.Copy_Link = function() {
+          var dataURL = canvas.contextTop.canvas.toDataURL("image/png");
+          navigator.clipboard.writeText(dataURL);
+        }
+        gui.Download_Paint = function(){
+          let downloadLink = document.createElement('a');
+          downloadLink.setAttribute('download', 'Painting.png');
+          let url = canvas.contextTop.canvas.toDataURL("image/png");
+          downloadLink.setAttribute('href', url);
+          downloadLink.click();
+        }
+        gui.add(gui, "brushType", ["CrayonBrush", "InkBrush", "MarkerBrush"])
+        .onFinishChange(setupBrush);
+        gui.add(gui, "brushWidth", 1, 100)
+          .onChange(function(value) {
+            canvas.freeDrawingBrush.width = value;
+          });
+        gui.addColor(gui, "brushColor")
+          .onChange(function(value) {
+            canvas.freeDrawingBrush.changeColor(value);
+          });
+        gui.add(gui, "brushOpacity", 0.1, 1).step(0.1)
+          .onChange(function(value) {
+            canvas.freeDrawingBrush.changeOpacity(value);
+          });
+        gui.add(gui, "inkAmount", 1, 10).step(0.1)
+          .onChange(function(value) {
+            canvas.freeDrawingBrush.inkAmount = value;
+          });
+        gui.add(gui, "Download_Paint");
+        gui.add(gui, "Copy_Link");
+        gui.add(gui, "Clear");
+      };
+    </script>
+    <script>
+      var metas = document.getElementsByTagName('meta');
+      var i;
+      if (navigator.userAgent.match(/iPhone/i)) {
+        for (i=0; i<metas.length; i++) {
+          if (metas[i].name == "viewport") {
+            metas[i].content = "width=device-width, minimum-scale=1.0, maximum-scale=1.0";
+          }
+        }
+        document.addEventListener("gesturestart", gestureStart, false);
+      }
+      function gestureStart() {
+        for (i=0; i<metas.length; i++) {
+          if (metas[i].name == "viewport") {
+            metas[i].content = "width=device-width, minimum-scale=0.25, maximum-scale=1.6";
+          }
+        }
+      }
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/fabric@4.6.0/dist/fabric.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/fabric-brush@0.0.1/dist/fabric-brush.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dat.gui@0.7.7/build/dat.gui.min.js"></script>
+  </body>
+</html>
